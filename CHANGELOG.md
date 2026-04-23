@@ -1,9 +1,17 @@
+<!--
+Modified from upstream AzuraCast for the RadioMoon fork on 2026-04-24.
+Distributed under the GNU Affero General Public License, version 3 or later.
+See LICENSE.md in the project root for the full license text.
+-->
+
 # Rolling Release Changes
 
 These changes have not yet been incorporated into a stable release, but if you are on the latest version of the rolling
 release channel, you can take advantage of these new features and fixes.
 
 ## New Features/Changes
+
+- Fork-specific: on-demand track listings now include media from playlists that are marked for on-demand use even if those playlists are disabled for regular radio playback.
 
 ## Code Quality/Technical Changes
 

@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * Modified from upstream AzuraCast for the RadioMoon fork on 2026-04-24.
+ * Distributed under the GNU Affero General Public License, version 3 or later.
+ * See LICENSE.md in the project root for the full license text.
+ */
+
 namespace App\Controller\Api\Stations\OnDemand;
 
 use App\Controller\Api\Stations\AbstractSearchableListAction;
@@ -98,7 +104,7 @@ final class ListAction extends AbstractSearchableListAction
                 <<<'DQL'
                 SELECT sp.id FROM App\Entity\StationPlaylist sp
                 WHERE sp.station = :station
-                AND sp.is_enabled = 1 AND sp.include_in_on_demand = 1
+                AND sp.include_in_on_demand = 1
                 DQL
             )->setParameter('station', $station)
                 ->getSingleColumnResult();
