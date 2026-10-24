@@ -4,6 +4,11 @@
 name: Publish RadioMoon Image
 on:
   workflow_dispatch:
+    inputs:
+      validate_only:
+        description: Validate without publishing or changing production
+        type: boolean
+        default: true
   push:
     branches:
       - main
@@ -26,7 +31,7 @@ jobs:
       APPLICATION_ENV: testing
       NODE_ENV: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -42,10 +47,13 @@ jobs:
           key: ${{ runner.OS }}-build-${{ hashFiles('composer.lock') }}
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "lts/jod"
+          node-version: "22.23.4"
           cache: "npm"
+
+      - name: Verify patched build Node
+        run: node -e 'const a=require("node:assert/strict");a.equal(process.versions.node,"22.23.4");a.equal(require("node:zlib").constants.BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH,-17)'
 
       - name: Prepare workspace
         run: |
@@ -64,10 +72,11 @@ jobs:
           bash util/write_git_info.sh
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
+        if: github.event_name != 'workflow_dispatch' || !inputs.validate_only
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -75,7 +84,7 @@ jobs:
 
       - name: Build Docker metadata
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/azuracast-radiomoon
           flavor: |
@@ -85,10 +94,10 @@ jobs:
             type=sha,prefix=git-
 
       - name: Build and publish image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
-          push: true
+          push: ${{ github.event_name != 'workflow_dispatch' || !inputs.validate_only }}
           platforms: linux/amd64
           provenance: false
           sbom: false
